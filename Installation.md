@@ -78,8 +78,8 @@ If you don't want to add a serial console to your NAS, you can skip this step.
 sudo raspi-config
 ```
 
-select `3 Interfacing Options`
-select `P6 Serial Port`
+select `3 Interfacing Options`  
+select `P6 Serial Port`  
 select `Yes` when you are asked `Would you like a login shell to be accessible over serial?`
 
 ### Software installation and configuration
