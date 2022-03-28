@@ -1,3 +1,4 @@
+# https://sourceforge.net/p/raspberry-gpio-python/wiki/Inputs/
 import RPi.GPIO as GPIO
 import paho.mqtt.client as mqtt
 from time import sleep
