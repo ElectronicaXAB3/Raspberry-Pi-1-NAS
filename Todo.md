@@ -10,3 +10,7 @@ process.on('SIGTSTP', shutdown_ctrl_z);
 // If kill signal, free resources and exit.
 process.on('SIGTERM', shutdown); 
 ```
+
+### Implement Python time difference
+
+https://github.com/adafruit/Adafruit_CircuitPython_GPS
