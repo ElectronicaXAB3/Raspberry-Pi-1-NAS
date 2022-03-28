@@ -110,15 +110,26 @@ sudo apt install python3-pip python3-rpi.gpio -y
 sudo -u nas pip3 install paho-mqtt
 ```
 
-**5. Installing the LCD server**
+**5. Installing the LCD application**
 
 copy & enable the service
 
 ```bash
-sudo cp LCD-server/LCD-server.service /etc/systemd/system/LCD-server.service
+sudo cp /home/nas/Raspberry-Pi-1-NAS/LCD-app/LCD-app.service /etc/systemd/system/LCD-app.service
 sudo systemctl daemon-reload
-sudo systemctl start LCD-server.service
-sudo systemctl enable LCD-server.service
+sudo systemctl start LCD-app.service
+sudo systemctl enable LCD-app.service
+```
+
+**6. Installing the Keyboard application**
+
+copy & enable the service
+
+```bash
+sudo cp /home/nas/Raspberry-Pi-1-NAS/Keyboard-app/Keyboard-app.service /etc/systemd/system/Keyboard-app.service
+sudo systemctl daemon-reload
+sudo systemctl start Keyboard-app.service
+sudo systemctl enable Keyboard-app.service
 ```
 
 ### Raspberry Pi cleanup

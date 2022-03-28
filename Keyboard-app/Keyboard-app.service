@@ -1,0 +1,20 @@
+[Unit]
+Description=Keyboard application - Raspberry Pi NAS
+DefaultDependencies=no
+Wants=mosquitto.service
+After=mosquitto.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=nas
+Group=nas
+
+Restart=always
+RestartSec=3
+
+WorkingDirectory=/home/nas/Raspberry-Pi-1-NAS
+ExecStart=/usr/bin/python3.7 /home/nas/Raspberry-Pi-1-NAS/Keyboard-app/main.py --serve-in-foreground
+
+[Install]
+WantedBy=multi-user.target

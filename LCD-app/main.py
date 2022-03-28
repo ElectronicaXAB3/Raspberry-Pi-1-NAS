@@ -163,7 +163,6 @@ def lcd_string(message, line):
     for i in range(LCD_WIDTH):
         lcd_display(ord(message[i]), LCD_CHR)
 
-
 # Start the main
 if __name__ == '__main__':
     try:
