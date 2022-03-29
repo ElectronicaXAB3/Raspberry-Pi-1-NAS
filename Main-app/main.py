@@ -54,6 +54,7 @@ def handle_cpu_time():
     if stepTimer.readMs() < 1000:
         return
 
+    # https://www.delftstack.com/howto/python/get-cpu-usage-in-python/
     payload = "CPU load|" + str(psutil.cpu_percent()) + "%"
     client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
     stepTimer.reset()
