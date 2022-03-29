@@ -18,11 +18,15 @@ stepTimer.start()
 stepOnce = True
 step = 0
 
+shuttingDown = False
+
 def main():
     mqtt_init()
 
     while True:
-        handle_step_change()
+        if not shuttingDown:
+            handle_step_change()
+
         sleep(0.1)
 
 def handle_step_change():
@@ -52,13 +56,15 @@ def mqtt_on_connect(client, userdata, flags, rc):
     client.subscribe(MQTT_KEYBOARD_TOPIC)
 
 def mqtt_on_message(client, userdata, msg):
-    global stepOnce
+    global shuttingDown, stepOnce
 
     message = msg.payload.decode('UTF-8')
 
     print("Received from MQTT server: " + msg.topic + " " + message)
 
-    if message == "bottom_key_pressed":
+    if message == "top_key_pressed":
+        shuttingDown = True
+    elif message == "bottom_key_pressed":
         stepOnce = True
 
 def mqtt_init():

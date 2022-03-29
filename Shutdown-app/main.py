@@ -26,7 +26,7 @@ def mqtt_on_message(client, userdata, msg):
         payload = "Shutting|down..."
         client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
 
-        os.system("shutdown -h now")
+        os.system("sudo halt")
 
 def mqtt_init():
     global client
