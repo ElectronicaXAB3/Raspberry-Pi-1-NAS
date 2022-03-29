@@ -15,7 +15,7 @@ sudo timedatectl set-timezone Europe/Bucharest
 sudo timedatectl set-ntp true
 ```
 
-**3. Disabling swap**
+**3. Disabling the swap**
 
 ```bash
 sudo systemctl stop dphys-swapfile.service
@@ -155,18 +155,29 @@ sudo systemctl start Shutdown-app.service
 sudo systemctl enable Shutdown-app.service
 ```
 
+**8. Installing the Main application**
+
+copy & enable the service
+
+```bash
+sudo cp /home/nas/Raspberry-Pi-1-NAS/Main-app/Main-app.service /etc/systemd/system/Main-app.service
+sudo systemctl daemon-reload
+sudo systemctl start Main-app.service
+sudo systemctl enable Main-app.service
+```
+
 ### Raspberry Pi cleanup
 
 This step is optional. But if you proceed with it, you will have fewer running processes, making the installation lighter. It will also boot a bit faster.
 
-**1. Disabling cron service**
+**1. Disabling the cron service**
 
 ```bash
 sudo systemctl stop cron
 sudo systemctl mask cron
 ```
 
-**2. Disabling rainbow splash**
+**2. Disabling the rainbow splash**
 
 ```bash
 sudo nano /boot/config.txt
@@ -179,7 +190,7 @@ and add
 disable_splash=1
 ```
 
-**3. Disabling SPI and I2C**
+**3. Disabling the SPI and the I2C**
 
 ```bash
 sudo nano /boot/config.txt
