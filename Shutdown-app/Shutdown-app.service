@@ -1,5 +1,5 @@
 [Unit]
-Description=LCD application - Raspberry Pi NAS
+Description=Shutdown application - Raspberry Pi NAS
 DefaultDependencies=no
 Wants=mosquitto.service
 After=mosquitto.service
@@ -11,10 +11,11 @@ User=nas
 Group=nas
 
 Restart=always
-RestartSec=5
+RestartSec=10
 
 WorkingDirectory=/home/nas/Raspberry-Pi-1-NAS
-ExecStart=/usr/bin/python3.7 /home/nas/Raspberry-Pi-1-NAS/LCD-app/main.py
+ExecStart=/usr/bin/python3.7 /home/nas/Raspberry-Pi-1-NAS/Shutdown-app/main.py
 
 [Install]
 WantedBy=multi-user.target
+ 

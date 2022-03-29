@@ -11,10 +11,10 @@ User=nas
 Group=nas
 
 Restart=always
-RestartSec=3
+RestartSec=5
 
 WorkingDirectory=/home/nas/Raspberry-Pi-1-NAS
-ExecStart=/usr/bin/python3.7 /home/nas/Raspberry-Pi-1-NAS/Keyboard-app/main.py --serve-in-foreground
+ExecStart=/usr/bin/python3.7 /home/nas/Raspberry-Pi-1-NAS/Keyboard-app/main.py
 
 [Install]
 WantedBy=multi-user.target

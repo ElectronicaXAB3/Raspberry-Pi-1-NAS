@@ -39,6 +39,18 @@ append the `gpio` group to newly created user
 sudo usermod -aG gpio nas
 ```
 
+give shutdown permissions to newly created user
+
+```bash
+sudo visudo
+```
+
+and add
+
+```text
+nas ALL=NOPASSWD: /sbin/shutdown
+```
+
 **5. Installing & configuring ifplugd**
 
 ```bash
@@ -130,6 +142,17 @@ sudo cp /home/nas/Raspberry-Pi-1-NAS/Keyboard-app/Keyboard-app.service /etc/syst
 sudo systemctl daemon-reload
 sudo systemctl start Keyboard-app.service
 sudo systemctl enable Keyboard-app.service
+```
+
+**7. Installing the Shutdown application**
+
+copy & enable the service
+
+```bash
+sudo cp /home/nas/Raspberry-Pi-1-NAS/Shutdown-app/Shutdown-app.service /etc/systemd/system/Shutdown-app.service
+sudo systemctl daemon-reload
+sudo systemctl start Shutdown-app.service
+sudo systemctl enable Shutdown-app.service
 ```
 
 ### Raspberry Pi cleanup
