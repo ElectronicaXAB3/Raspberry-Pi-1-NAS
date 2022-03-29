@@ -1,5 +1,6 @@
 import os
 import sys
+import psutil
 import paho.mqtt.client as mqtt
 from time import sleep,time
 from datetime import datetime
@@ -15,7 +16,7 @@ MQTT_LCD_TOPIC = "nas/lcd"
 
 stepTimer = timer.timer()
 stepTimer.start()
-stepOnce = True
+stepChanged = False
 step = 0
 
 shuttingDown = False
@@ -24,39 +25,61 @@ def main():
     mqtt_init()
 
     while True:
-        if not shuttingDown:
-            handle_step_change()
+        if shuttingDown:
+            sleep(10)
+            return
 
+        handle_app()
         sleep(0.1)
 
-def handle_step_change():
-    global stepOnce, step
+def handle_app():
+    handle_step_increment()
 
-    """ if stepOnce:
-        step += 1
-        step %= 2 """
-
-    # The clock
     if step == 0:
-        if stepOnce:
-            client.publish(MQTT_LCD_TOPIC, payload="|", qos=0, retain=False)
-            sleep(0.1)
-            stepTimer.reset()
-            stepOnce = False
+        handle_clock()
+    elif step == 1:
+        handle_cpu_time()
 
-        if stepTimer.readMs() > 900:
-            now = datetime.now()
-            # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
-            payload = now.strftime('%d %b %Y') + "|" + now.strftime('%H:%M:%S')
-            client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
-            stepTimer.reset()
+def handle_clock():
+    if stepTimer.readMs() < 800:
+        return
+
+    now = datetime.now()
+    # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+    payload = now.strftime('%d %b %Y') + "|" + now.strftime('%H:%M:%S')
+    client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
+    stepTimer.reset()
+
+def handle_cpu_time():
+    if stepTimer.readMs() < 1000:
+        return
+
+    payload = "CPU load|" + str(psutil.cpu_percent()) + "%"
+    client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
+    stepTimer.reset()
+
+def handle_step_increment():
+    global step, stepChanged
+
+    if stepChanged:
+        step += 1
+        if (step == 2):
+            step = 0
+
+        clear_the_lcd()
+        stepTimer.reset()
+        stepChanged = False
+
+def clear_the_lcd():
+    client.publish(MQTT_LCD_TOPIC, payload="|", qos=0, retain=False)
+    sleep(0.1)
 
 def mqtt_on_connect(client, userdata, flags, rc):
     print(f"Connected to MQTT server with result code {rc}")
     client.subscribe(MQTT_KEYBOARD_TOPIC)
 
 def mqtt_on_message(client, userdata, msg):
-    global shuttingDown, stepOnce
+    global shuttingDown, stepChanged
 
     message = msg.payload.decode('UTF-8')
 
@@ -65,7 +88,7 @@ def mqtt_on_message(client, userdata, msg):
     if message == "top_key_pressed":
         shuttingDown = True
     elif message == "bottom_key_pressed":
-        stepOnce = True
+        stepChanged = True
 
 def mqtt_init():
     global client
@@ -84,4 +107,3 @@ if __name__ == '__main__':
         pass
     finally:
         pass
-
