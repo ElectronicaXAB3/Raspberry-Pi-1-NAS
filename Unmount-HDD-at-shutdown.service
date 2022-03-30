@@ -1,0 +1,14 @@
+[Unit]
+Description=Unmount HDD at shutdown
+DefaultDependencies=no
+Conflicts=reboot.target
+Before=poweroff.target halt.target shutdown.target
+Requires=poweroff.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/bin/udiskie-umount --detach --force /dev/sda
+RemainAfterExit=yes
+
+[Install]
+WantedBy=shutdown.target 

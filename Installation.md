@@ -108,21 +108,142 @@ sudo apt install samba -y
 sudo apt install mosquitto -y
 ```
 
-**3. Cloning the Github repository**
+**3. Install disk management tools**
+
+Install the disks daemon
+
+```bash
+sudo apt install udisks2 -y
+```
+
+Install the frontend
+
+```bash
+sudo pip3 install udiskie
+```
+
+The `udiskie` command will install `udiskie`, `udiskie-info`, `udiskie-mount` and `udiskie-umount` executables located in `/usr/local/bin/` folder.
+
+**4. Installing the HDD**
+
+Find the HDD partition we are about to mount
+
+```bash
+lsblk
+```
+
+example output
+
+```text
+NAME        MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+sda           8:0    0 931.5G  0 disk
+├─sda1        8:1    0 499.7M  0 part
+├─sda2        8:2    0  34.6G  0 part
+├─sda3        8:3    0     1K  0 part
+└─sda5        8:5    0 896.5G  0 part 
+```
+
+**Note:** mine is /dev/sda5 on a 1TB HDD.
+
+Find the partition UUID
+
+```bash
+sudo blkid
+```
+
+example output
+
+```text
+...
+/dev/sda5: UUID="20e5d1c9-10aa-4804-8501-c618d78d8004" TYPE="ext4" PARTUUID="7e025efc-05"
+```
+
+**Note:** mine is `20e5d1c9-10aa-4804-8501-c618d78d8004`.
+
+Create the mounting point
+
+```bash
+sudo mkdir /mnt/1tb-hdd
+```
+
+Add the partition to mount automatically on every boot
+
+```bash
+sudo nano /etc/fstab
+```
+
+and add
+
+```text
+# USB HDD
+UUID=20e5d1c9-10aa-4804-8501-c618d78d8004 /mnt/1tb-hdd  ext4   noatime,nodiratime,errors=remount-ro 0       2
+```
+
+mount it now
+
+```
+sudo mount -a
+```
+
+change whole HDD files permissions
+
+```bash
+sudo chown pi:pi /mnt/1tb-hdd -R
+```
+
+**5. Installing & configuring samba**
+
+```bash
+sudo apt install samba -y
+```
+
+```bash
+sudo nano /etc/samba/smb.conf
+```
+
+and add
+
+```text
+[1TB_USB_HDD]
+    comment = An almost 1TB USB HDD
+    path = /mnt/1tb-hdd
+    browseable = yes
+    guest ok = no
+    writable = yes
+    force user = pi
+    force group = pi
+    valid users = pi
+```
+
+create a samba user and set a password
+
+```bash
+sudo smbpasswd -a pis
+```
+
+**Note:** this password should be something else than the Linux account's password
+
+restart the Samba service
+
+```bash
+sudo systemctl restart smbd.service
+```
+
+**6. Cloning the GitHub repository**
 
 ```bash
 cd /home/nas
 git clone https://github.com/ElectronicaXAB3/Raspberry-Pi-1-NAS
 ```
 
-**4. Installing the requirements**
+**7. Installing the Python requirements**
 
 ```bash
 sudo apt install python3-pip python3-rpi.gpio -y
 sudo -u nas pip3 install paho-mqtt
 ```
 
-**5. Installing the LCD application**
+**8. Installing the LCD application**
 
 copy & enable the service
 
@@ -133,7 +254,7 @@ sudo systemctl start LCD-app.service
 sudo systemctl enable LCD-app.service
 ```
 
-**6. Installing the Keyboard application**
+**9. Installing the Keyboard application**
 
 copy & enable the service
 
@@ -144,7 +265,7 @@ sudo systemctl start Keyboard-app.service
 sudo systemctl enable Keyboard-app.service
 ```
 
-**7. Installing the Shutdown application**
+**10. Installing the Shutdown application**
 
 copy & enable the service
 
@@ -155,7 +276,7 @@ sudo systemctl start Shutdown-app.service
 sudo systemctl enable Shutdown-app.service
 ```
 
-**8. Installing the Main application**
+**11. Installing the Main application**
 
 copy & enable the service
 
@@ -166,18 +287,30 @@ sudo systemctl start Main-app.service
 sudo systemctl enable Main-app.service
 ```
 
+**12. Installing the `unmount HDD at shutdown` service**
+
+copy & enable the service
+
+```bash
+sudo cp /home/nas/Raspberry-Pi-1-NAS/Unmount-HDD-at-shutdown.service /etc/systemd/system/Unmount-HDD-at-shutdown.service
+sudo systemctl daemon-reload
+sudo systemctl enable Unmount-HDD-at-shutdown.service
+```
+
+This will make sure the HDD will get unmounted and powered-down (parking heads) before the Raspberry Pi completes the shutdown process.
+
 ### Raspberry Pi cleanup
 
 This step is optional. But if you proceed with it, you will have fewer running processes, making the installation lighter. It will also boot a bit faster.
 
-**1. Disabling the cron service**
+**1. Disable the cron service**
 
 ```bash
 sudo systemctl stop cron
 sudo systemctl mask cron
 ```
 
-**2. Disabling the rainbow splash**
+**2. Disable the rainbow splash**
 
 ```bash
 sudo nano /boot/config.txt
@@ -190,7 +323,7 @@ and add
 disable_splash=1
 ```
 
-**3. Disabling the SPI and the I2C**
+**3. Disable the SPI and the I2C**
 
 ```bash
 sudo nano /boot/config.txt
@@ -207,5 +340,8 @@ dtparam=spi=off
 ### Resources
 
 - [How to Add and Delete Users on Ubuntu 18.04](https://www.digitalocean.com/community/tutorials/how-to-add-and-delete-users-on-ubuntu-18-04)
+- [How to run script with systemd at shutdown only](https://www.golinuxcloud.com/run-script-with-systemd-at-shutdown-only-rhel/)
 - [RPi.GPIO examples](https://sourceforge.net/p/raspberry-gpio-python/wiki/Examples/)
 - [eclipse/paho.mqtt.python examples](https://github.com/eclipse/paho.mqtt.python/tree/af64c3845663caaebaba0720549eb363067ca07a/examples)
+- [udiskie manual](https://raw.githubusercontent.com/coldfix/udiskie/master/doc/udiskie.8.txt)
+- [samba users config](https://www.samba.org/samba/docs/using_samba/ch09.html)
