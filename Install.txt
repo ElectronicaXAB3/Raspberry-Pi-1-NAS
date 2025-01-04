@@ -1,0 +1,32 @@
+App installation and configuration
+----------------------------------
+
+    1. Installing the GitHub repository
+        Generate a new public/private key:
+            ssh-keygen -t ed25519 -C "RPi Clock"
+
+        Add the public key to GitHub:
+            cat ~/.ssh/id_ed25519.pub
+
+            To check for Github connection and ask for password:
+                ssh -T git@github.com
+
+        Clone the repo
+            git clone https://github.com/ElectronicaXAB3/Raspberry-Pi-1-NAS
+
+        Change the directory
+            cd Raspberry-Pi-1-NAS
+
+        Create a virtual environment:
+            python -m venv .venv
+            source .venv/bin/activate
+            pip install -r requirements.txt
+            deactivate
+
+        Install the systemd services
+            // TODO
+
+        Mount the project over SSH
+            From the remote computer, run:
+            mkdir /home/user/Desktop/Raspberry-Pi-1-NAS
+            sudo sshfs -o allow_other,default_permissions user@10.10.10.30:/home/user/Raspberry-Pi-1-NAS /home/user/Desktop/Raspberry-Pi-1-NAS

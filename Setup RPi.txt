@@ -1,0 +1,210 @@
+Change the timezone
+-------------------
+
+    sudo timedatectl set-timezone Europe/Bucharest
+    sudo timedatectl set-ntp true
+
+Disabling the swap
+------------------
+
+    sudo systemctl stop dphys-swapfile.service
+    sudo systemctl mask dphys-swapfile.service
+
+    sudo dphys-swapfile swapoff
+    sudo rm /var/swap
+
+System update (optional)
+------------------------
+
+    sudo apt update && apt list --upgradable
+    sudo apt install tmux -y
+    tmux
+    sudo apt update
+
+Setup the SSH server
+--------------------
+
+    Edit SSH config:
+
+        sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.original
+        sudo nano /etc/ssh/sshd_config
+
+        And add/modify:
+
+            PermitRootLogin no
+            PubkeyAuthentication yes
+            AuthorizedKeysFile      .ssh/authorized_keys
+            PasswordAuthentication no
+
+    Add you keys
+
+        mkdir -p /home/user/.ssh
+        touch /home/user/.ssh/authorized_keys
+        chmod 0600 /home/user/.ssh/authorized_keys
+        nano /home/user/.ssh/authorized_keys
+
+        Add:
+            ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF2Hwg8/EmkEiufkk4GAG4Eg601pl+GkFOQK9Thrru3b Ubuntu-22-Ryzen
+
+    From Raspberry Pi console, run:
+        sudo systemctl restart ssh
+        sudo systemctl status ssh
+
+Software installation and configuration
+---------------------------------------
+
+    1. Install system utilities
+        sudo apt install mc htop tmux curl wget git ncdu net-tools parted python3 python3-pip python3-venv -y
+        sudo apt install neofetch --no-install-recommends -y
+
+    2. Installing and configure Mosquitto
+        sudo apt install mosquitto mosquitto-clients -y
+        sudo systemctl stop mosquitto
+
+        sudo nano /etc/mosquitto/conf.d/default.conf
+
+        Add the following configuration to the file:
+
+            # MQTT Broker Configuration
+            listener 1883
+            protocol mqtt
+
+            # Do not save the in-memory database to disk
+            persistence false
+
+            # Authentication
+            allow_anonymous true
+
+        sudo rm /var/lib/mosquitto/mosquitto.db
+        sudo systemctl start mosquitto
+
+Optimizing the OS
+-----------------
+
+    Before you run any of these optimizations, make sure you that you backup the config files:
+
+        sudo cp /boot/firmware/config.txt /boot/firmware/config.txt.original
+        sudo cp /boot/firmware/cmdline.txt /boot/firmware/cmdline.txt.original
+
+    Note: After each change, reboot the Raspberry Pi to make sure that everything is working as expected.
+
+    To view all unit files (service, target and timer):
+        sudo systemctl list-unit-files --state=enabled
+
+        To view all services:
+            sudo systemctl list-unit-files --type=service --all
+
+            Or to view only enabled services:
+                sudo systemctl list-unit-files --type=service --state=enabled
+
+        To view all timers:
+            sudo systemctl list-unit-files --type=timer --all
+
+            Or to view only enabled services:
+                sudo systemctl list-unit-files --type=timer --state=enabled
+
+    To view all sockets:
+        sudo systemctl list-unit-files --type=socket --all
+
+        Or to view only enabled sockets:
+            sudo systemctl list-unit-files --type=socket --state=enabled
+
+    View the boot time:
+        sudo systemd-analyze
+
+        Example output:
+            Startup finished in 5.254s (kernel) + 8.672s (userspace) = 13.926s
+            multi-user.target reached after 7.872s in userspace.
+
+    1. Optimize the filesystem
+        sudo cp /etc/fstab /etc/fstab.original
+        sudo nano /etc/fstab
+
+        Change:
+            proc            /proc           proc    defaults          0       0
+            PARTUUID=5d8664fc-01  /boot/firmware  vfat    defaults          0       2
+            PARTUUID=5d8664fc-02  /               ext4    defaults,noatime  0       1
+
+        To:
+            proc            /proc           proc    defaults          0       0
+            PARTUUID=5d8664fc-01  /boot/firmware  vfat    defaults,noatime,nodiratime          0       2
+            PARTUUID=5d8664fc-02  /               ext4    defaults,noatime,nodiratime  0       1
+
+    2. Disabling "alsa-restore.service", "alsa-state.service" and "alsa-utils.service" systemd services
+        sudo systemctl mask alsa-restore.service
+        sudo systemctl mask alsa-state.service
+        sudo systemctl mask alsa-utils.service
+
+    3. Disabling "apt-daily-upgrade" and "apt-daily" systemd services and timers
+        sudo systemctl mask apt-daily-upgrade.service
+        sudo systemctl mask apt-daily-upgrade.timer
+        sudo systemctl mask apt-daily.service
+        sudo systemctl mask apt-daily.timer
+
+    4. Disabling "man-db.timer" systemd timers
+        sudo systemctl mask man-db.timer
+
+    5. Disabling "avahi-daemon.service" systemd services
+        sudo systemctl mask avahi-daemon.service
+        sudo systemctl mask avahi-daemon.socket
+
+    6. Disabling "cron.service" systemd services
+        sudo systemctl mask cron.service
+
+    7. Disabling "bluetooth.service" and "hciuart.service" systemd services
+        sudo systemctl mask bluetooth.service
+        sudo systemctl mask hciuart.service
+
+    8. Disabling "fake-hwclock.service" systemd services
+        sudo systemctl mask fake-hwclock.service
+
+    9. Disabling "keyboard-setup.service" systemd services
+        sudo systemctl mask keyboard-setup.service
+
+    10. Disabling "ModemManager.service" systemd services
+        sudo systemctl mask ModemManager.service
+
+    11. Disabling "rpi-display-backlight.service" systemd services
+        sudo systemctl mask rpi-display-backlight.service
+
+    12. Disabling "rpi-eeprom-update.service" systemd services
+        sudo systemctl mask rpi-eeprom-update.service
+
+    13. Disabling "sshswitch.service" systemd services
+        sudo systemctl mask sshswitch.service
+
+    14. Disabling "triggerhappy.service" systemd services
+        sudo systemctl mask triggerhappy.service
+        sudo systemctl mask triggerhappy.socket
+
+    15. Disabling "wpa_supplicant.service" and "systemd-rfkill.socket" wireless services
+        sudo systemctl mask wpa_supplicant.service
+        sudo systemctl mask systemd-rfkill.socket
+
+    16. Remove login motd
+        sudo mv /etc/motd /etc/motd.original
+
+    17. Disabling things in "config.txt" file
+        sudo nano /boot/firmware/config.txt
+
+        # Disable audio (does not load snd_bcm2835)
+        dtparam=audio=off
+
+        # Setup VRAM (minimum is 16, but with a notice)
+        gpu_mem=32
+
+        # Disable rainbow splash
+        disable_splash=1
+
+        # Disable I2C, I2S and SPI
+        dtparam=i2c_arm=off
+        dtparam=i2s=off
+        dtparam=spi=off
+
+        # Disable the bluetooth from using the UART
+        dtoverlay=disable-bt
+
+    18. Disabling things in "cmdline.txt" file
+        sudo nano /boot/firmware/cmdline.txt
+
+        add "quiet logo.nologo fastboot noatime audit=0 systemd.show_status=0" to that line.
