@@ -1,7 +1,11 @@
 App installation and configuration
 ----------------------------------
 
-    1. Installing the GitHub repository
+    1. Installing the required packages
+        Requirements for lgpio module:
+            sudo apt install swig liblgpio-dev
+
+    2. Installing the GitHub repository
         Generate a new public/private key:
             ssh-keygen -t ed25519 -C "RPi Clock"
 

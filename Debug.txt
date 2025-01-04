@@ -1,0 +1,4 @@
+Listen to all mosquitto topics
+------------------------------
+
+    mosquitto_sub -t "#" -v
