@@ -53,8 +53,8 @@ def handle_clock():
         now = datetime.now()
 
         # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
-        date = now.strftime('%d %b %Y')
         time = now.strftime('%H:%M:%S')
+        date = now.strftime('%d %b %Y')
 
         # Replace months names from US to Romanian
         date = date.replace("Jan", "Ian")
@@ -64,10 +64,10 @@ def handle_clock():
         date = date.replace("Nov", "Noi")
 
         # Center the rows on the LCD (16 chars)
-        date = date.center(16)
         time = time.center(16)
+        date = date.center(16)
 
-        payload = date + "|" + time
+        payload = time + "|" + date
 
         _client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
 
