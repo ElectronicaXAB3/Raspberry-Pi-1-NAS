@@ -6,6 +6,7 @@ import os
 sys.path.append(os.path.dirname(__file__))
 sys.dont_write_bytecode = True
 
+import requests
 import psutil
 import paho.mqtt.client as mqtt
 from time import sleep
@@ -23,8 +24,8 @@ _step = 0
 _shuttingDown = False
 _client = None
 _clock_timer = ElapsedTimer(1.0)
-_cpu_timer = ElapsedTimer(1.0)
-_mem_timer = ElapsedTimer(1.0)
+_cpu_and_mem_timer = ElapsedTimer(1.0)
+_ip_address_timer = ElapsedTimer(2.0)
 
 def main():
     mqtt_init()
@@ -43,9 +44,9 @@ def handle_app():
     if _step == 0:
         handle_clock()
     elif _step == 1:
-        handle_cpu_time()
+        handle_cpu_load_and_memory_usage()
     elif _step == 2:
-        handle_memory_usage()
+        handle_external_ip_address()
 
 def handle_clock():
     if _clock_timer.elapsed():
@@ -72,31 +73,33 @@ def handle_clock():
 
         _clock_timer.reset()
 
-def handle_cpu_time():
-    if _cpu_timer.elapsed():
+def handle_cpu_load_and_memory_usage():
+    if _cpu_and_mem_timer.elapsed():
         # https://www.delftstack.com/howto/python/get-cpu-usage-in-python/
         cpu_percent = psutil.cpu_percent()
         whole = int(cpu_percent)
         decimal = int((cpu_percent - whole) * 100)
+        cpu_load = f"{whole:d}.{decimal:02d}%"
 
-        first_row = "CPU load"
-        second_row = f"{whole:d}.{decimal:02d}%"
-
-        # Center the rows on the LCD (16 chars)
-        first_row = first_row.center(16)
-        second_row = second_row.center(16)
-
-        payload = first_row + "|" + second_row
-        _client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
-
-        _cpu_timer.reset()
-
-def handle_memory_usage():
-    if _mem_timer.elapsed():
-        first_row = "RAM usage"
         used_mb = psutil.virtual_memory().used // 1024**2
         total_mb = psutil.virtual_memory().total // 1024**2
-        second_row = f"{used_mb}MB/{total_mb}MB"
+        memory_usage = f"{used_mb}MB/{total_mb}MB"
+
+        first_row = "CPU: " + cpu_load
+        second_row = "RAM: " + memory_usage
+
+        payload = first_row + "|" + second_row
+        _client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
+
+        _cpu_and_mem_timer.reset()
+
+def handle_external_ip_address():
+    if _ip_address_timer.elapsed():
+        # https://stackoverflow.com/questions/2311510/getting-a-machines-external-ip-address-with-python
+        ip_address = requests.get('https://api64.ipify.org').text
+
+        first_row = "IP Address"
+        second_row = ip_address
 
         # Center the rows on the LCD (16 chars)
         first_row = first_row.center(16)
@@ -105,7 +108,7 @@ def handle_memory_usage():
         payload = first_row + "|" + second_row
         _client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
 
-        _mem_timer.reset()
+        _ip_address_timer.reset()
 
 def handle_step_increment():
     global _step, _stepChanged
