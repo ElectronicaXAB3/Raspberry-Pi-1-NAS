@@ -14,9 +14,17 @@ KEY_TOP = 22
 KEY_BOTTOM = 17
 
 _client = None
-_handle = None
+_gpioh = None
 _top_key_prev_state = 1
 _bottom_key_prev_state = 1
+
+def main():
+    mqtt_init()
+    keys_init()
+
+    while True:
+        read_keys()
+        sleep(0.2)
 
 def on_connect(client, userdata, flags, reason_code, properties):
     print(f"Connected to MQTT server with result code: {reason_code}")
@@ -37,25 +45,25 @@ def mqtt_init():
     _client.loop_start()
 
 def keys_init():
-    global _handle
+    global _gpioh
 
     # Initialize GPIO
-    _handle = lgpio.gpiochip_open(0)
-    print(f"GPIO chip opened with handle: {_handle}")
+    _gpioh = lgpio.gpiochip_open(0)
+    print(f"GPIO chip opened with handle: {_gpioh}")
 
     # Get GPIO info
-    chip_info = lgpio.gpio_get_chip_info(_handle)
+    chip_info = lgpio.gpio_get_chip_info(_gpioh)
     print(f"Chip info = status: {chip_info[0]}, lines: {chip_info[1]}, name: {chip_info[2]}, label: {chip_info[3]}")
 
     # Configure pins as inputs with pull-ups
-    lgpio.gpio_claim_input(_handle, KEY_TOP, lgpio.SET_PULL_UP)
-    lgpio.gpio_claim_input(_handle, KEY_BOTTOM, lgpio.SET_PULL_UP)
+    lgpio.gpio_claim_input(_gpioh, KEY_TOP, lgpio.SET_PULL_UP)
+    lgpio.gpio_claim_input(_gpioh, KEY_BOTTOM, lgpio.SET_PULL_UP)
 
 def read_keys():
     global _top_key_prev_state, _bottom_key_prev_state
 
-    top_key_state = lgpio.gpio_read(_handle, KEY_TOP)
-    bottom_key_state = lgpio.gpio_read(_handle, KEY_BOTTOM)
+    top_key_state = lgpio.gpio_read(_gpioh, KEY_TOP)
+    bottom_key_state = lgpio.gpio_read(_gpioh, KEY_BOTTOM)
 
     if top_key_state == 0 and top_key_state != _top_key_prev_state:
         _top_key_prev_state = top_key_state
@@ -69,14 +77,6 @@ def read_keys():
     if bottom_key_state == 1:
         _bottom_key_prev_state = bottom_key_state
 
-def main():
-    mqtt_init()
-    keys_init()
-
-    while True:
-        read_keys()
-        sleep(0.1)
-
 # Start the main
 if __name__ == '__main__':
     try:
@@ -86,8 +86,8 @@ if __name__ == '__main__':
         pass
     finally:
         # Cleanup GPIO and MQTT
-        if _handle:
-            lgpio.gpiochip_close(_handle)
+        if _gpioh:
+            lgpio.gpiochip_close(_gpioh)
         if _client:
             _client.loop_stop()
             _client.disconnect()

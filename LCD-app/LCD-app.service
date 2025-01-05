@@ -1,0 +1,20 @@
+[Unit]
+Description=LCD application for Raspberry Pi
+DefaultDependencies=no
+Wants=mosquitto.service
+After=mosquitto.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+Group=user
+
+Restart=always
+RestartSec=5
+
+WorkingDirectory=/home/user/Raspberry-Pi-1-NAS
+ExecStart=/home/user/Raspberry-Pi-1-NAS/.venv/bin/python /home/user/Raspberry-Pi-1-NAS/LCD-app/main.py
+
+[Install]
+WantedBy=multi-user.target
