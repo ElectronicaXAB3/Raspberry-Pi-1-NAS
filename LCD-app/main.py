@@ -1,3 +1,5 @@
+# /home/user/Raspberry-Pi-1-NAS/.venv/bin/python /home/user/Raspberry-Pi-1-NAS/LCD-app/main.py
+# 
 # https://www.electronicshub.org/interfacing-16x2-lcd-with-raspberry-pi/
 # https://learn.adafruit.com/drive-a-16x2-lcd-directly-with-a-raspberry-pi/python-code
 import lgpio
@@ -184,7 +186,7 @@ if __name__ == '__main__':
         pass
     finally:
         lcd_clear()
-        # Cleanup GPIO and MQTT
+        # Cleanup GPIO and MQTT client
         if _gpioh:
             lgpio.gpiochip_close(_gpioh)
         if _client:

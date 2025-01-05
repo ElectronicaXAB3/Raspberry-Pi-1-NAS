@@ -1,0 +1,21 @@
+[Unit]
+Description=Main application - Raspberry Pi NAS
+DefaultDependencies=no
+Wants=LCD-app.service Keyboard-app.service Shutdown-app.service
+After=LCD-app.service Keyboard-app.service Shutdown-app.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=user
+Group=user
+
+Restart=always
+RestartSec=5
+
+WorkingDirectory=/home/user/Raspberry-Pi-1-NAS
+ExecStart=/home/user/Raspberry-Pi-1-NAS/.venv/bin/python /home/user/Raspberry-Pi-1-NAS/Main-app/main.py
+
+[Install]
+WantedBy=multi-user.target
+ 

@@ -31,12 +31,14 @@ App installation and configuration
             sudo cp /home/user/Raspberry-Pi-1-NAS/Keyboard-app/Keyboard-app.service /etc/systemd/system/Keyboard-app.service
             sudo cp /home/user/Raspberry-Pi-1-NAS/Shutdown-app/Shutdown-app.service /etc/systemd/system/Shutdown-app.service
             sudo cp /home/user/Raspberry-Pi-1-NAS/LCD-app/LCD-app.service /etc/systemd/system/LCD-app.service
+            sudo cp /home/user/Raspberry-Pi-1-NAS/Main-app/Main-app.service /etc/systemd/system/Main-app.service
 
             sudo systemctl daemon-reload
 
             sudo systemctl enable --now Keyboard-app.service
             sudo systemctl enable --now Shutdown-app.service
             sudo systemctl enable --now LCD-app.service
+            sudo systemctl enable --now Main-app.service
 
         Mount the project over SSH
             From the remote computer, run:
