@@ -16,13 +16,15 @@ MQTT_HOSTNAME = "localhost"
 MQTT_PORT = 1883
 MQTT_KEYBOARD_TOPIC = "nas/keyboard"
 MQTT_LCD_TOPIC = "nas/lcd"
+MQTT_TIMEOUT = 10
 
 _stepChanged = False
-_step = 0
+_step = 1
 _shuttingDown = False
 _client = None
 _clock_timer = ElapsedTimer(1.0)
 _cpu_timer = ElapsedTimer(1.0)
+_mem_timer = ElapsedTimer(1.0)
 
 def main():
     mqtt_init()
@@ -42,6 +44,8 @@ def handle_app():
         handle_clock()
     elif _step == 1:
         handle_cpu_time()
+    elif _step == 2:
+        handle_memory_usage()
 
 def handle_clock():
     if _clock_timer.elapsed():
@@ -76,7 +80,7 @@ def handle_cpu_time():
         decimal = int((cpu_percent - whole) * 100)
 
         first_row = "CPU load"
-        second_row = f"{whole:03d}.{decimal:02d}%"
+        second_row = f"{whole:d}.{decimal:02d}%"
 
         # Center the rows on the LCD (16 chars)
         first_row = first_row.center(16)
@@ -87,11 +91,27 @@ def handle_cpu_time():
 
         _cpu_timer.reset()
 
+def handle_memory_usage():
+    if _mem_timer.elapsed():
+        first_row = "RAM usage"
+        used_mb = psutil.virtual_memory().used // 1024**2
+        total_mb = psutil.virtual_memory().total // 1024**2
+        second_row = f"{used_mb}MB/{total_mb}MB"
+
+        # Center the rows on the LCD (16 chars)
+        first_row = first_row.center(16)
+        second_row = second_row.center(16)
+
+        payload = first_row + "|" + second_row
+        _client.publish(MQTT_LCD_TOPIC, payload=payload, qos=0, retain=False)
+
+        _mem_timer.reset()
+
 def handle_step_increment():
     global _step, _stepChanged
 
     if _stepChanged:
-        _step = (_step + 1) % 2
+        _step = (_step + 1) % 3
 
         clear_the_lcd()
         _stepChanged = False
@@ -122,7 +142,7 @@ def mqtt_init():
     _client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     _client.on_connect = mqtt_on_connect
     _client.on_message = mqtt_on_message
-    _client.connect(MQTT_HOSTNAME, MQTT_PORT, 60)
+    _client.connect(MQTT_HOSTNAME, MQTT_PORT, MQTT_TIMEOUT)
     _client.loop_start()
 
 # Start the main

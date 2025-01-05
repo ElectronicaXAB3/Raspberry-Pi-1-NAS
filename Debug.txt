@@ -2,3 +2,11 @@ Listen to all mosquitto topics
 ------------------------------
 
     mosquitto_sub -t "#" -v
+
+Stop services
+-------------
+
+    sudo systemctl stop Keyboard-app.service
+    sudo systemctl stop Shutdown-app.service
+    sudo systemctl stop LCD-app.service
+    sudo systemctl stop Main-app.service
