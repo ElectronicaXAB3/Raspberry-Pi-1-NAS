@@ -19,7 +19,7 @@ MQTT_LCD_TOPIC = "nas/lcd"
 MQTT_TIMEOUT = 10
 
 _stepChanged = False
-_step = 1
+_step = 0
 _shuttingDown = False
 _client = None
 _clock_timer = ElapsedTimer(1.0)
