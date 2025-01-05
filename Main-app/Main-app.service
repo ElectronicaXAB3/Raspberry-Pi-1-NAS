@@ -1,5 +1,5 @@
 [Unit]
-Description=Main application - Raspberry Pi NAS
+Description=Main application for Raspberry Pi
 DefaultDependencies=no
 Wants=LCD-app.service Keyboard-app.service Shutdown-app.service
 After=LCD-app.service Keyboard-app.service Shutdown-app.service
